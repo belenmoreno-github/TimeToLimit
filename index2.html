@@ -1,25 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Folium</title>
+    <meta charset="utf-8">
 
-    <title>PyScript Hello World</title>
-
-    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="../build/pyscript.css" />
-
     <script defer src="../build/pyscript.js"></script>
-  </head>
+    <py-env>
+      - folium
+      - pandas
+    </py-env>
+    </head>
+    <body>
+      <div id="folium" style="width: 100%; height: 100%"></div>
+      <py-script output="folium">
+import folium
+import json
+import pandas as pd
 
-  <body>
-    Hello world! <br>
-    This is the current date and time, as computed by Python:
-    <py-script>
-from datetime import datetime
-now = datetime.now()
-now.strftime("%m/%d/%Y, %H:%M:%S")
-    </py-script>
-  </body>
+from pyodide.http import open_url
+
+url = (
+    "https://raw.githubusercontent.com/python-visualization/folium/master/examples/data"
+)
+state_geo = f"{url}/us-states.json"
+state_unemployment = f"{url}/US_Unemployment_Oct2012.csv"
+state_data = pd.read_csv(open_url(state_unemployment))
+geo_json = json.loads(open_url(state_geo).read())
+
+m = folium.Map(location=[48, -102], zoom_start=3)
+
+folium.Choropleth(
+    geo_data=geo_json,
+    name="choropleth",
+    data=state_data,
+    columns=["State", "Unemployment"],
+    key_on="feature.id",
+    fill_color="YlGn",
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name="Unemployment Rate (%)",
+).add_to(m)
+
+folium.LayerControl().add_to(m)
+
+m
+      </py-script>
+    </body>
 </html>
-© 2022 GitHub, I
